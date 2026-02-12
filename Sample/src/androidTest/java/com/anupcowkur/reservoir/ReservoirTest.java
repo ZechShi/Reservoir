@@ -1,8 +1,8 @@
 package com.anupcowkur.reservoir;
 
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
 
 import com.anupcowkur.reservoirsample.MainActivity;
 import com.google.gson.reflect.TypeToken;
@@ -18,7 +18,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import rx.Observer;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
@@ -35,7 +37,7 @@ public class ReservoirTest {
     private int i;
 
     @Rule
-    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class);
+    public final ActivityScenarioRule<MainActivity> rule = new ActivityScenarioRule<>(MainActivity.class);
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -131,30 +133,36 @@ public class ReservoirTest {
 
         Reservoir.putUsingObservable(KEY, testPutObject).subscribe(new Observer<Boolean>() {
             @Override
-            public void onCompleted() {
-
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onComplete() {
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
                 fail();
             }
 
             @Override
-            public void onNext(Boolean success) {
+            public void onNext(@NonNull Boolean success) {
                 Reservoir.getUsingObservable(KEY, TestClass.class).subscribe(new Observer<TestClass>() {
                     @Override
-                    public void onCompleted() {
-
+                    public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onComplete() {
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
                         fail();
                     }
 
                     @Override
-                    public void onNext(TestClass testResultObject) {
+                    public void onNext(@NonNull TestClass testResultObject) {
                         assertEquals(TEST_STRING, testResultObject.getTestString());
                     }
                 });
@@ -172,34 +180,40 @@ public class ReservoirTest {
 
         Reservoir.putUsingObservable(KEY, testStrings).subscribe(new Observer<Boolean>() {
             @Override
-            public void onCompleted() {
-
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onComplete() {
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
                 fail();
             }
 
             @Override
-            public void onNext(Boolean success) {
+            public void onNext(@NonNull Boolean success) {
 
                 final Type testResultType = new TypeToken<List<String>>() {
                 }.getType();
 
                 Reservoir.getUsingObservable(KEY, String.class, testResultType).subscribe(new Observer<String>() {
                     @Override
-                    public void onCompleted() {
-
+                    public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onComplete() {
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
                         fail();
                     }
 
                     @Override
-                    public void onNext(String testResultString) {
+                    public void onNext(@NonNull String testResultString) {
                         assertEquals(strings[i++], testResultString);
                     }
                 });
@@ -234,17 +248,21 @@ public class ReservoirTest {
             Exception {
         Reservoir.getUsingObservable("non_existent_key", TestClass.class).subscribe(new Observer<TestClass>() {
             @Override
-            public void onCompleted() {
+            public void onSubscribe(@NonNull Disposable d) {
+            }
+
+            @Override
+            public void onComplete() {
                 fail();
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 assertThat(e, instanceOf(NullPointerException.class));
             }
 
             @Override
-            public void onNext(TestClass testClass) {
+            public void onNext(@NonNull TestClass testClass) {
                 fail();
             }
         });
@@ -281,18 +299,22 @@ public class ReservoirTest {
             Exception {
         Reservoir.putUsingObservable(KEY, TestUtils.getLargeString()).subscribe(new Observer<Boolean>() {
             @Override
-            public void onCompleted() {
+            public void onSubscribe(@NonNull Disposable d) {
+            }
+
+            @Override
+            public void onComplete() {
                 fail();
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 assertThat(e, instanceOf(IOException.class));
                 assertEquals(SimpleDiskCache.OBJECT_SIZE_GREATER_THAN_CACHE_SIZE_MESSAGE, e.getMessage());
             }
 
             @Override
-            public void onNext(Boolean aBoolean) {
+            public void onNext(@NonNull Boolean aBoolean) {
                 fail();
             }
         });
@@ -340,17 +362,20 @@ public class ReservoirTest {
 
         Reservoir.deleteUsingObservable(KEY).subscribe(new Observer<Boolean>() {
             @Override
-            public void onCompleted() {
-
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onComplete() {
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
                 fail();
             }
 
             @Override
-            public void onNext(Boolean success) {
+            public void onNext(@NonNull Boolean success) {
                 try {
                     assertEquals(false, Reservoir.contains(KEY));
                 } catch (Exception e) {
@@ -402,17 +427,20 @@ public class ReservoirTest {
 
         Reservoir.clearUsingObservable().subscribe(new Observer<Boolean>() {
             @Override
-            public void onCompleted() {
-
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onComplete() {
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
                 fail();
             }
 
             @Override
-            public void onNext(Boolean success) {
+            public void onNext(@NonNull Boolean success) {
                 try {
                     assertEquals(0, Reservoir.bytesUsed());
                 } catch (Exception e) {

@@ -1,41 +1,44 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "25.0.2"
+    namespace 'com.anupcowkur.reservoir'
+    compileSdk 35
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 23
+        minSdk 21
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.google.code.gson:gson:2.7'
-    provided 'io.reactivex:rxandroid:1.2.1'
-    provided 'io.reactivex:rxjava:1.1.6'
+    implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation 'com.google.code.gson:gson:2.11.0'
+    compileOnly 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    compileOnly 'io.reactivex.rxjava3:rxjava:3.1.8'
 }
 
-task makeJar(type: Copy, dependsOn: build) {
-    from('build/intermediates/bundles/release/')
-    into('build/libs/')
-    include('classes.jar')
-    rename('classes.jar', 'reservoir-' + project.VERSION_NAME + '-sources.jar')
-}
-
-task makeJavadocs(type: Javadoc) {
+tasks.register('makeJavadocs', Javadoc) {
     source = android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
+
 afterEvaluate {
-    makeJavadocs.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
+    tasks.named('makeJavadocs').configure {
+        classpath += project.android.libraryVariants.toList().first().javaCompileProvider.get().classpath
+    }
 }
 
-task makeJavadocsJar(type: Jar, dependsOn: makeJavadocs) {
-    classifier = 'javadoc'
-    from makeJavadocs.destinationDir
+tasks.register('makeJavadocsJar', Jar) {
+    dependsOn 'makeJavadocs'
+    archiveClassifier.set('javadoc')
+    from tasks.named('makeJavadocs').get().destinationDir
 }
 
