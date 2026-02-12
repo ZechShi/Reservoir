@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 android {
@@ -15,6 +16,13 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
@@ -40,5 +48,45 @@ tasks.register('makeJavadocsJar', Jar) {
     dependsOn 'makeJavadocs'
     archiveClassifier.set('javadoc')
     from tasks.named('makeJavadocs').get().destinationDir
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'com.github.anupcowkur'
+                artifactId = 'reservoir'
+                version = project.VERSION_NAME
+
+                pom {
+                    name = 'Reservoir'
+                    description = 'Android library to easily serialize and cache your objects to disk using key/value pairs'
+                    url = 'https://github.com/anupcowkur/Reservoir'
+
+                    licenses {
+                        license {
+                            name = 'The MIT License'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'anupcowkur'
+                            name = 'Anup Cowkur'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:github.com/anupcowkur/Reservoir.git'
+                        developerConnection = 'scm:git:ssh://github.com/anupcowkur/Reservoir.git'
+                        url = 'https://github.com/anupcowkur/Reservoir/tree/master'
+                    }
+                }
+            }
+        }
+    }
 }
 
